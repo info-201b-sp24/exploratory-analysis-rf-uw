@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><metadata>
+    <idinfo>
+        <citation>
+            <citeinfo>
+                <origin/>
+                <pubdate>20220201</pubdate>
+                <title>2021 Voting Districts for King County / votdst_area_2021</title>
+                <onlink>https://kingcounty.maps.arcgis.com/home/item.html?id=b1d61de746614805a3a39861acbb7c18</onlink>
+                <onlink>https://kingcounty.maps.arcgis.com/home/item.html?id=cf903aa740df4b3a9eaeefdd353e7b81</onlink>
+                <onlink>https://www5.kingcounty.gov/sdc/addl_doc/KCGISCenterTermsAndConditions.pdf</onlink>
+                <onlink>https://www5.kingcounty.gov/sdc/addl_doc/KCGISCenterHelpUsingKCOpenData.pdf</onlink>
+            </citeinfo>
+        </citation>
+        <descript>
+            <abstract>This data layer describes the boundaries, name, and number of voters of voting precincts of King County for 2021.</abstract>
+            <purpose>This data layer describes the boundaries, name, and number of voters of voting precincts of King County.  The data was created for precinct analysis and display and reflects the precinct boundary changes due to 2021 redistricting and/or the annual precinct balancing project in the spring of each year. Data can be joined with election results in e-canvass to map election results.</purpose>
+        </descript>
+        <keywords>
+            <theme>
+                <themekt>None</themekt>
+                <themekey>district_OpenData</themekey>
+                <themekey>kingcounty_opendata</themekey>
+                <themekey>voting</themekey>
+                <themekey>district</themekey>
+                <themekey>precinct</themekey>
+                <themekey>voters</themekey>
+                <themekey>redistricting</themekey>
+                <themekey>votdst_area_2021</themekey>
+            </theme>
+        </keywords>
+        <accconst>Other Constraints</accconst>
+        <useconst>Use Constraint: King County data are made available with the 
+understanding that they shall be used exclusively by the obtainer or 
+his/her authorized agents. Digital products may not be reproduced or 
+redistributed in any form or by any means without the express written 
+authorization of King County.</useconst>
+        <ptcontac>
+            <cntinfo>
+                <cntorgp>
+                    <cntorg>King County Elections</cntorg>
+                    <cntper>Dave Wilson</cntper>
+                </cntorgp>
+                <cntpos>GIS Supervisor</cntpos>
+                <cntaddr>
+                    <addrtype>mailing and physical</addrtype>
+                    <address>919 SW Grady Way</address>
+                    <city>Renton</city>
+                    <state>WA</state>
+                    <postal>98057</postal>
+                    <country>US</country>
+                </cntaddr>
+                <cntvoice>206-477-4115</cntvoice>
+                <cntemail>dave.wilson@kingcounty.gov</cntemail>
+            </cntinfo>
+        </ptcontac>
+        <datacred>King County</datacred>
+    </idinfo>
+    <metainfo>
+        <metd>20220201</metd>
+        <metc>
+            <cntinfo>
+                <cntorgp>
+                    <cntorg>King County Elections</cntorg>
+                    <cntper>Dave Wilson</cntper>
+                </cntorgp>
+                <cntpos>GIS Supervisor</cntpos>
+                <cntaddr>
+                    <addrtype>mailing and physical</addrtype>
+                    <address>919 SW Grady Way</address>
+                    <city>Renton</city>
+                    <state>WA</state>
+                    <postal>98057</postal>
+                    <country>US</country>
+                </cntaddr>
+                <cntvoice>206-477-4115</cntvoice>
+                <cntemail>dave.wilson@kingcounty.gov</cntemail>
+            </cntinfo>
+        </metc>
+        <metstdn>FGDC Content Standard for Digital Geospatial Metadata</metstdn>
+        <metstdv>FGDC-STD-001-1998</metstdv>
+        <mettc>local time</mettc>
+    </metainfo>
+</metadata>

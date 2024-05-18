@@ -1,0 +1,206 @@
+---
+title: "index.Rmd"
+author: "Ryder Forsythe"
+date: "2024-05-18"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load datasets
+precinct_data <- read.csv("precinct_data.csv")
+precinct_shapes <- read_sf("precinctshapes/precinct_shapes.shp")
+
+# Joining data to precinct shapefile
+precinct_joined <- inner_join(precinct_shapes, precinct_data, by = "NAME")
+
+# Creating columns with ethnic % instead of totals, and computing swing from 2012 to 2020
+precinct_data <- precinct_data %>% mutate(
+  V_20_VAP_NH_Nonwhite = (V_20_VAP_NH_Total - V_20_VAP_NH_White),
+  white_20 = V_20_VAP_NH_White/V_20_VAP_NH_Total,
+  nonwhite_20 = V_20_VAP_NH_Nonwhite/V_20_VAP_NH_Total,
+  black_20 = V_20_VAP_NH_BlackAlone/V_20_VAP_NH_Total,
+  hispanic_20 = V_20_VAP_NH_Hispanic/V_20_VAP_NH_Total,
+  asian_20 = V_20_VAP_NH_AsianAlone/V_20_VAP_NH_Total,
+  pacific_20 = V_20_VAP_NH_PacificAlone/V_20_VAP_NH_Total,
+  native_20 =  V_20_VAP_NH_NativeAlone/V_20_VAP_NH_Total,
+  multi_20 = V_20_VAP_NH_TwoOrMore/V_20_VAP_NH_Total,
+  swing_12_20 = E_20_PRES_Margin - E_12_PRES_Margin
+)
+```
+
+# Race and Elections in King County
+
+### **Ryder Forsythe ([ryderf\@uw.edu](mailto:ryderf@uw.edu){.email})**
+
+### **Spring 2024**
+
+## Abstract
+
+How has race impacted election results in King County over the past 16 years? Using demographic data from the Census Bureau and electoral and geospatial data from the Washington Secretary of State, I will examine geographic patterns in voter behavior and analyze the correlation between partisanship, electoral trends, and race and ethnicity. This analysis will help inform discussion about past and future elections and provide important context for changes in our electoral landscape.
+
+*Keywords: elections, census block data, race, geospatial data*
+
+## 1. Introduction
+
+I want to look at the last decade and a half of elections in King County, and how they have been correlated with race and ethnicity as measured by the U.S. Census Bureau. Since 2008, King County has undergone several major electoral realignments alongside the rest of the country. As the largest county in Washington State, and one of the largest and most diverse in the country, changes in its electoral landscape reflect several broader trends in political affiliation and electoral participation. In the past decade, traditional political divides have shifted, correlated in part with race. Using electoral and demographic data from the past 16 years, I want to explore and answer these research questions:
+
+-   **What is the electoral geography of King County? How has this changed over time?**
+
+-    **What is the racial geography of King County? How has this changed over time?**
+
+-   **How is race correlated with changes in the electoral landscape of King County?**
+
+Analyzing these topics can help us to better understand not only how politics and electoral coalitions are changing, but *why* - and how they may continue to shift in the coming election - not only in King County or Washington State, but in the United States as a whole.
+
+## 2. Related Work
+
+There is a lot of existing election data analysis and visualization; numerous individuals and outlets use socioeconomic geodata alongside election data to try and understand the underlying factors which contribute to partisanship and examine how they have changed over time. The visual, geographic study of elections is called *psephology*, and is a subdiscipline of political science. A lot of research and analysis in the past eight years has focused on ongoing electoral realignments based on race and educational attainment; this analysis is often done on the state-, county-, and district-level, but rarely on the precinct level. Some local news outlets like the Seattle Times have published [maps of federal, state, and local elections in Seattle and King County](https://www.seattletimes.com/seattle-news/politics/trump-voters-hiding-in-plain-sight-in-king-county/), and analyzed the geography of the results; or have looked at [the geography of racial diversity in the city](https://www.seattletimes.com/seattle-news/data/where-does-your-seattle-neighborhood-fall-in-this-diversity-index-check-the-map/). Less locally, the New York Times has published nationwide precinct maps of the last two Presidential elections ([2020](https://www.nytimes.com/interactive/2021/upshot/2020-election-map.html) and [2016](https://www.nytimes.com/interactive/2018/upshot/election-2016-voting-precinct-maps.html)). Scholarly research on these elections has focused on geographic realignments based on race and level of education; nationally, more highly educated places are swinging towards the Democratic Party, while less highly educated places - disproportionately nonwhite - are swinging towards the Republican Party; [a 2022 paper](https://journals.sagepub.com/doi/full/10.1177/10659129221079862) by Joshua N. Zingher examined these trends on the county level from 2000 to 2020, noting that the correlation between educational attainment and support for the Democratic Party increased dramatically over those 20 years, while polarization based on race decreased. This has implications for how future electoral coalitions may be geographically arranged.
+
+“An Extremely Detailed Map of the 2016 Presidential Election.” The New York Times, 26 July 2018, www.nytimes.com/interactive/2018/upshot/election-2016-voting-precinct-maps.html.
+
+Park, Alice, et al. “An Extremely Detailed Map of the 2020 Election.” The New York Times, 2 Feb. 2021, www.nytimes.com/interactive/2021/upshot/2020-election-map.html.
+
+“Trump Voters Hiding in Plain Sight in King County.” The Seattle Times, 15 Nov. 2016, www.seattletimes.com/seattle-news/politics/trump-voters-hiding-in-plain-sight-in-king-county/. Accessed 2 May 2024.
+
+“Where Does Your Seattle Neighborhood Fall in This “Diversity Index”? Check the Map.” The Seattle Times, 11 Oct. 2021, www.seattletimes.com/seattle-news/data/where-does-your-seattle-neighborhood-fall-in-this-diversity-index-check-the-map/.
+
+Zingher, Joshua N. “Diploma Divide: Educational Attainment and the Realignment of the American Electorate.” Political Research Quarterly, vol. 75, no. 2, 24 Apr. 2022, p. 106591292210798, <https://doi.org/10.1177/10659129221079862>.
+
+## 3. The Dataset
+
+[The dataset](https://docs.google.com/spreadsheets/d/1M5eRNDF4ReLY5yJKrxArbkNGMHLGcWuQ5F9KORZF8vQ/edit?usp=sharing) was compiled by Dave’s Redistricting App ([davesredistricting.org](davesredistricting.org)), a project of the nonprofit [Social Good Fund](https://www.socialgoodfund.org) that provides free electoral and census data for the purpose of redistricting at the federal, state, and local level, alongside a suite of redistricting tools that allow users to draw and export district maps based on that data. The data has several primary sources; electoral data comes primarily from the Voting and Election Science Team, which in turn aggregates election data from state and local election administrators. In Washington State, the Secretary of State and county auditors administer elections and publish precinct-level electoral data; VEST cleans the data, and DRA merges it with geospatial precinct information, also from the Secretary of State, and demographic data from the United States Census Bureau.
+
+This dataset contains electoral and demographic data from 2008 to 2020 in King County; there are 2755 observations (rows), corresponding to the 2755 precincts in the county, and 135 features/columns, containing data from 25 elections, the 2010 and 2020 censuses, and the American Communities race and ethnicity survey conducted by the Census Bureau. The racial data aggregated here is reflective of many historical and socioeconomic factors; redlining and recent migration and gentrification have shaped where racial minorities live in the county, and economic factors like income and education have shaped how people in King County vote - both on a partisan level and in terms of turnout and voter participation.
+
+This data is very far-reaching; it covers a very wide range of racial and electoral information; not all of this data is directly useful. For example, the Census measures both *total* population and *voting-age* population by race; this distinction is important because people who are not of voting age don't impact election results, and so are usually discounted in this kind of analysis, so the total population component of the dataset is not particularly useful. There are also considerations about how the Census Bureau handles racial and ethnic data - in the decennial census, information about whether one is hispanic/latino is collected separately from other racial data. The 5-year American Communities survey, by contrast, measures hispanic/latino identification as part of their racial categorization. This means that there isn't one clear standard for how to measure hispanic/latino identity in conjuction with other racial categories; some discretion is required in determining how to deal with this discrepancy.
+
+## 4. Implications
+
+Analyzing and visualizing this dataset will help clarify the relationships between race and political affiliation, and will provide us with a better understanding of electoral trends in Seattle and King County. This is important information for elected officials and people who study partisanship and politics, as how different groups of people vote is key to how electoral campaigns are conducted and how we discuss and study their results. Race and ethnicity are central to the ongoing study of elections and politics in the United States, and understanding how these dynamics are changing is vital to making predictions about the future and building narratives about the broader social trends at play, which in turn helps shape policy and culture. Further, understanding how race and ethnicity correlate with electoral participation and turnout, and how this has changed over time, can help us develop better strategies and technologies for engaging voters and encouraging civic participation, and give elected officials and policymakers context for how communities feel about and interact with their government.
+
+## 5. Limitations & Challenges
+
+Because the data ultimately comes from several different sources, with different methodologies for collecting data about people - elections vs. censuses/surveys - and because this is aggregated across precincts containing hundreds or thousands of people, we cannot draw direct conclusions about individuals’ political or electoral leanings based on this dataset. Still, it can be useful to study broader trends to understand the larger narratives at play in King County and the broader electorate. Elections are ultimately a proxy for political beliefs; what are typically binary choices cannot express the breadth and complexity of individuals’ views of politics and the world, and so there is inherent dimensionality lost when we study this kind of data; similarly, demographic questions obscure a lot of complexity in how people identify their culture and communities. On the other hand, electoral and demographic data are some of the most geographically granular available - we’re trading complexity for specificity. This level of analysis is ultimately only a starting point for further quantitative and qualitative study of these trends.
+
+## Summary Information
+
+```{r, echo = FALSE}
+summary_info <- list()
+summary_info$num_precincts <- nrow(precinct_data)
+summary_info$total_voters <- sum(precinct_data$V_20_VAP_NH_Total)
+summary_info$nonwhite_voters <- sum(precinct_data$V_20_VAP_NH_Nonwhite)
+summary_info$nonwhite_percentage <- summary_info$nonwhite_voters/summary_info$total_voters
+summary_info$precinct_mean_pop_20 <- mean(precinct_data$V_20_VAP_Total)
+summary_info$county_swing_12_20 <- (sum(precinct_data$E_20_PRES_Dem) - sum(precinct_data$E_20_PRES_Rep))/(sum(precinct_data$E_20_PRES_Dem) + sum(precinct_data$E_20_PRES_Rep)) - (sum(precinct_data$E_12_PRES_Dem) - sum(precinct_data$E_12_PRES_Rep))/(sum(precinct_data$E_12_PRES_Dem) + sum(precinct_data$E_12_PRES_Rep))
+
+print(summary_info)
+```
+
+These six values give some context about the county as a whole; King County has 2759 precincts, the average precinct has 657 people of voting age, the county has 1813470 people of voting age, of whom 772926 do not identify as white (42.62% of the total), and the county swung 12.6 points towards Democrats from 2012 to 2020.
+
+## Aggregate Table
+
+```{r, echo = FALSE}
+by_city <- precinct_data %>%
+  group_by(City) %>%
+  summarize(
+    Total_Voters = sum(V_20_VAP_NH_Total),
+    Nonwhite_Share = sum(V_20_VAP_NH_Nonwhite)/sum(V_20_VAP_NH_Total),
+    Black_Share = sum(V_20_VAP_NH_BlackAlone)/sum(V_20_VAP_NH_Total),
+    Hispanic_Share = sum(V_20_VAP_NH_Hispanic)/sum(V_20_VAP_NH_Total),
+    Asian_Share = sum(V_20_VAP_NH_AsianAlone)/sum(V_20_VAP_NH_Total),
+    margin_2012 = sum(E_12_PRES_Margin),
+    margin_2020 = sum(E_20_PRES_Margin),
+    swing_12_20 = sum(swing_12_20),
+    ) %>%
+  arrange(desc(Nonwhite_Share)) %>%
+  mutate(across(where(is.numeric), round, digits=3))
+
+print(by_city)
+```
+
+This table displays the dataset aggregated by City, and includes data about the voting population of each city - how many total voters there are (as of 2020), how (non)white the city is, what proportion of the population identifies as each of the three largest nonwhite racial groups (Black, Hispanic, and Asian), and how the city swung between the 2012 and 2020 United States Presidential elections. The table is sorted so that the least white cities are at the top - since we're trying to ascertain the behavior of nonwhite voters in the county, we want to look at places with a high proportion of them. Also included is the 2020 Presidential margin (by convention, positive values correspond to Democratic margins, and negative values correspond to Republican margins). This provides a baseline to understand a bit of what the 2012 - 2020 swing means at the city level, and where each city is demographically and politically right now.
+
+## Chart 1 - Demographic Geography of King County
+
+```{r, echo = FALSE}
+map1 <- ggplot(precinct_joined) +
+  geom_sf(aes(fill = nonwhite_20), color = "white", linewidth = 0.01) +
+  labs(title = "Nonwhite % of Population in King County by Precinct") + 
+  scale_fill_viridis_c(
+    name = "Nonwhite %",
+    breaks = c(0, 0.5, 1),
+    labels = c("0%", "50%", "100%")
+    ) +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank(),
+    plot.title = element_text(face = "bold"),
+    rect = element_blank(),
+    legend.title = element_text(vjust = 5, face = "bold")
+    )
+
+map1
+```
+
+## Chart 2 - Electoral Geography of King County
+
+```{r, echo = FALSE}
+map2 <- ggplot(precinct_joined) +
+  geom_sf(aes(fill = swing_12_20), color = "white", linewidth = 0.01) +
+  scale_fill_gradient2(
+    breaks = c(-0.5, 0, 0.5),
+    labels = c("R + 50", "No Change", "D + 50"),
+    limits = c(-0.5, 0.5),
+    name = "Margin Swing"
+  ) +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank(),
+    plot.title = element_text(face = "bold"),
+    rect = element_blank(),
+    legend.title = element_text(vjust = 5, face = "bold")
+  )
+
+map2
+```
+
+## Chart 3 - Correlations Between Ethnicity and Electoral Swings
+
+```{r, echo = FALSE}
+# Creates a categorical variable to track which of the three largest minority racial groups is the largest in each precinct
+precinct_data <- precinct_data %>% 
+  mutate(
+    minority_plurality = case_when(
+     hispanic_20 > white_20 & hispanic_20 > black_20 & hispanic_20 > asian_20 ~ "Hispanic",
+     black_20 > hispanic_20 & black_20 > white_20 & black_20 > asian_20 & black_20 ~ "Black",
+     asian_20 > hispanic_20 & asian_20 > black_20 & asian_20 > white_20 & asian_20 ~ "Asian",
+     .default = "Other"
+    )
+  )
+
+# Creates the plot
+plot3 <- precinct_data %>% filter(minority_plurality != "Other") %>%
+  ggplot(aes(x = nonwhite_20, y = swing_12_20)) +
+    geom_point(size = 0.4) +
+    facet_wrap(minority_plurality ~ .) +
+    labs(
+      title = "2012-2020 Presidential Margin Swing by Nonwhite Population",
+      x = "Nonwhite % of Voting Age Population",
+      y = "Swing from 2012 to 2020") +
+    scale_y_continuous(limits = c(-0.5, 0.5)) +
+    scale_x_continuous(limits = c(0.5, 1)) +
+    geom_hline(yintercept = 0, alpha = 0.3,  linetype = "longdash") +
+    geom_smooth(method = lm, color = "dodgerblue3", alpha = 0.3, size = 0.5) +
+    theme_light()
+
+plot3
+```
+
+## 

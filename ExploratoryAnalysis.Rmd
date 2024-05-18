@@ -14,9 +14,6 @@ knitr::opts_chunk$set(echo = TRUE)
 precinct_data <- read.csv("precinct_data.csv")
 precinct_shapes <- read_sf("precinctshapes/precinct_shapes.shp")
 
-# Joining data to precinct shapefile
-precinct_joined <- inner_join(precinct_shapes, precinct_data, by = "NAME")
-
 # Creating columns with ethnic % instead of totals, and computing swing from 2012 to 2020
 precinct_data <- precinct_data %>% mutate(
   V_20_VAP_NH_Nonwhite = (V_20_VAP_NH_Total - V_20_VAP_NH_White),
@@ -30,6 +27,9 @@ precinct_data <- precinct_data %>% mutate(
   multi_20 = V_20_VAP_NH_TwoOrMore/V_20_VAP_NH_Total,
   swing_12_20 = E_20_PRES_Margin - E_12_PRES_Margin
 )
+
+# Joining data to precinct shapefile
+precinct_joined <- inner_join(precinct_shapes, precinct_data, by = "NAME")
 ```
 
 # Race and Elections in King County
@@ -130,7 +130,7 @@ This table displays the dataset aggregated by City, and includes data about the 
 ```{r, echo = FALSE}
 map1 <- ggplot(precinct_joined) +
   geom_sf(aes(fill = nonwhite_20), color = "white", linewidth = 0.01) +
-  labs(title = "Nonwhite % of Population in King County by Precinct") + 
+  labs(title = "Nonwhite Share of Voting-Age Population in King County by Precinct") + 
   scale_fill_viridis_c(
     name = "Nonwhite %",
     breaks = c(0, 0.5, 1),
@@ -148,11 +148,14 @@ map1 <- ggplot(precinct_joined) +
 map1
 ```
 
+This map depicts the nonwhite share of the population in each precinct in King County. The least white and most diverse part of King County is South Seattle and its surroundings, which has several precincts that are close to 100% nonwhite. The more sparsely populated eastern King County is very white, as are Seattle's affluent coasts and Vashon Island. If race is correlated with changes in electoral behavior, we should see those highly nonwhite precincts in South Seattle swinging in opposition to the highly white precincts in North and West Seattle and the outer suburbs.
+
 ## Chart 2 - Electoral Geography of King County
 
 ```{r, echo = FALSE}
 map2 <- ggplot(precinct_joined) +
   geom_sf(aes(fill = swing_12_20), color = "white", linewidth = 0.01) +
+  labs(title = "Margin Swing from 2012 to 2020 Presidential Elections by Precinct") +
   scale_fill_gradient2(
     breaks = c(-0.5, 0, 0.5),
     labels = c("R + 50", "No Change", "D + 50"),
@@ -170,6 +173,8 @@ map2 <- ggplot(precinct_joined) +
 
 map2
 ```
+
+Here we can see the swing from the 2012 to 2020 Presidential election by precinct. The Eastside of King County swung intensely towards the Democratic Party, while South Seattle and the southern suburbs swung to the right. This seems to indicate that there is a correlation between race and changes in voting behavior; nonwhite voters seem to have swung to the right and white voters seem to have swung to the left. There are exceptions to both of these patterns, however; there is a cluster of very white rural precincts in south-central King County that swung right, and the largest leftward swings were not in the whitest places but in moderately nonwhite areas on the Eastside. This indicates that race may not be the only factor here.
 
 ## Chart 3 - Correlations Between Ethnicity and Electoral Swings
 
@@ -203,4 +208,5 @@ plot3 <- precinct_data %>% filter(minority_plurality != "Other") %>%
 plot3
 ```
 
-## 
+This faceted scatterplot displays the relationship between the nonwhite share of the population in each precinct and the 2012 - 2020 swing. By convention, negative values indicate a swing to Republicans and positive values indicate a swing to Democrats. To get a more precise and pertinent view of the data, the data is filtered to show only the precincts where one of the three major nonwhite ethnic groups (Black, Hispanic, and Asian) are a plurality of the voting age population, and the plot is faceted to show each kind of precinct in turn. This could help clarify which ethnic group the swings might be concentrated in, rather than simply looking at nonwhite share. Running a basic linear regression on each set of data, we get the above lines of best fit and confidence intervals. For both Asian- and Black-plurality precincts, the swing away from Democrats correlates with the nonwhite population of the precinct - this indicates that there is a correlation between nonwhite population and rightward movement. Interestingly, this correlation appears to be reversed in Hispanic-plurality precincts, but there are too few observations for this to be especially meaningful.
+

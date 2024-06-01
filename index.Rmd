@@ -3,12 +3,15 @@ title: "index.Rmd"
 author: "Ryder Forsythe"
 date: "2024-05-18"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(sf)
+library(knitr)
 
 # Load datasets
 precinct_data <- read.csv("precinct_data.csv")
@@ -206,7 +209,7 @@ plot3 <- precinct_data %>% filter(minority_plurality != "Other") %>%
     theme_light()
 
 plot3
+
 ```
 
 This faceted scatterplot displays the relationship between the nonwhite share of the population in each precinct and the 2012 - 2020 swing. By convention, negative values indicate a swing to Republicans and positive values indicate a swing to Democrats. To get a more precise and pertinent view of the data, the data is filtered to show only the precincts where one of the three major nonwhite ethnic groups (Black, Hispanic, and Asian) are a plurality of the voting age population, and the plot is faceted to show each kind of precinct in turn. This could help clarify which ethnic group the swings might be concentrated in, rather than simply looking at nonwhite share. Running a basic linear regression on each set of data, we get the above lines of best fit and confidence intervals. For both Asian- and Black-plurality precincts, the swing away from Democrats correlates with the nonwhite population of the precinct - this indicates that there is a correlation between nonwhite population and rightward movement. Interestingly, this correlation appears to be reversed in Hispanic-plurality precincts, but there are too few observations for this to be especially meaningful.
-
